@@ -2,12 +2,11 @@
 #include "Magick++/Geometry.h"
 #include "Magick++/Include.h"
 #include <ostream>
-#include <pstl/glue_execution_defs.h>
 #include <string>
 #include <iostream>
 #include <filesystem>
+#include <thread>
 #include <vector>
-#include <execution>
 #include <Magick++.h>
 
 
@@ -55,24 +54,12 @@ int main(int argc, char* argv[]) {
       files_in_directory.push_back(entry.path());
     }
   }
+  std::vector<std::thread> threads;
+  for (auto file : files_in_directory) {
+    threads.push_back(std::move(std::thread(do_the_thing, file)));
+  }
+  for (auto &t : threads) {
+    t.join();
+  }
 
-//  for (auto e : files_in_directory) {
-//    Magick::Image copy_mask(mask);
-//
-//    std::cout << e << std::endl;
-//    Magick::Image i;
-//    i.read(e);
-//    copy_mask.resize(i.size());
-//    i.magick("PNG");
-//    i.composite(copy_mask, Magick::GravityType::CenterGravity, Magick::OverCompositeOp);
-//    int height = copy_mask.size().height();
-//    i.crop(Magick::Geometry(height, height, (i.size().width() - copy_mask.size().width()) / 2, 0));
-//    i.write(e + "_masked.png");
-//  }
-
-std::for_each(
-    std::execution::par,
-    files_in_directory.begin(),
-    files_in_directory.end(),
-    do_the_thing);
 }
