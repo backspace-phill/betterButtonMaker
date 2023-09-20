@@ -11,7 +11,10 @@
 #include <Magick++.h>
 
 
+const int MAX_NUMBER_OF_THREADS = 10;
+
 Magick::Image mask;
+std::string name_of_mask;
 
 std::vector<std::string> take_top_n_of_vector(std::shared_ptr<std::vector<std::string>> input_vec, int n) {
   std::vector<std::string> output;
@@ -38,7 +41,7 @@ void do_the_thing(std::string e){
     i.composite(copy_mask, Magick::GravityType::CenterGravity, Magick::OverCompositeOp);
     int height = copy_mask.size().height();
     i.crop(Magick::Geometry(height, height, (i.size().width() - copy_mask.size().width()) / 2, 0));
-    i.write(e + "_masked.png");
+    i.write(e + "_masked_with_" + name_of_mask);
 } 
 
 
@@ -54,6 +57,7 @@ int main(int argc, char* argv[]) {
 
   mask.magick("PNG");
   mask.read(argv[2]);
+  name_of_mask = argv[2];
 
 
   std::string path = argv[1];
@@ -66,7 +70,7 @@ int main(int argc, char* argv[]) {
   }
 
 while (files_in_directory->size() != 0) {
-  auto files = take_top_n_of_vector(files_in_directory, 10);
+  auto files = take_top_n_of_vector(files_in_directory, MAX_NUMBER_OF_THREADS);
   
 
   std::vector<std::thread> threads;
